@@ -126,15 +126,15 @@ def authenticate():
         </form>
     '''
 
-@app.route('/check_out/<document_uid>')
+@app.route('/check_out/<document_id>')
 @login_required
-def check_out(document_uid):
+def check_out(document_id):
     pass
 
-@app.route('/check_in/<document_uid>/<flag>')
-@app.route('/check_in/<document_uid>/', defaults={'flag': None})
+@app.route('/check_in/<document_id>/<flag>')
+@app.route('/check_in/<document_id>/', defaults={'flag': None})
 @login_required
-def check_in(document_uid, flag):
+def check_in(document_id, flag):
     if request.method == 'POST':
         file = request.files['file']
         if file:
