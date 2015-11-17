@@ -9,8 +9,8 @@ CREATE TABLE document_access (
       uid text(128) NOT NULL,
       document_id text(128) NOT NULL,
       until TEXT,
-      read integer(1) NOT NULL DEFAULT(0),
-      write integer(1) NOT NULL DEFAULT(0),
+      permission TEXT NOT NULL,
+      propagate integer(1) DEFAULT(0),
       PRIMARY KEY(uid, document_id)
 );
 
