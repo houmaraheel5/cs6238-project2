@@ -133,9 +133,14 @@ def check_out(document_id):
 
 @app.route('/check_in/<document_id>/<flag>')
 @app.route('/check_in/<document_id>/', defaults={'flag': None})
+@app.route('/check_in/', defaults={'flag': None, 'document_id': None})
 @flask_login.login_required
 def check_in(document_id, flag):
     if request.method == 'POST':
+        if document_id != None:
+            uid = session['username']
+            if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
+                return "{0} can not check in {1}".format(uid, document_id)
         file = request.files['file']
         if file:
             filename = secure_filename(session['username'] + file.filename)
