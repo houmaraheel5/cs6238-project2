@@ -8,7 +8,7 @@ CREATE TABLE document (
 CREATE TABLE document_access (
       uid text(128) NOT NULL,
       document_id text(128) NOT NULL,
-      until datetime(128),
+      until TEXT,
       read integer(1) NOT NULL DEFAULT(0),
       write integer(1) NOT NULL DEFAULT(0),
       PRIMARY KEY(uid, document_id)
@@ -17,7 +17,7 @@ CREATE TABLE document_access (
 CREATE TABLE document_owner (
       uid text(128) NOT NULL,
       document_id text(128) NOT NULL,
-      until datetime(128),
+      until TEXT,
       PRIMARY KEY(uid, document_id)
 );
 
