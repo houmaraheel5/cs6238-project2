@@ -127,13 +127,13 @@ def authenticate():
     '''
 
 @app.route('/check_out/<document_id>')
-@login_required
+@flask_login.login_required
 def check_out(document_id):
     pass
 
 @app.route('/check_in/<document_id>/<flag>')
 @app.route('/check_in/<document_id>/', defaults={'flag': None})
-@login_required
+@flask_login.login_required
 def check_in(document_id, flag):
     if request.method == 'POST':
         file = request.files['file']
@@ -144,21 +144,20 @@ def check_in(document_id, flag):
 
 @app.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
            defaults={'propogate':False, 'until':None})
-@login_required
+@flask_login.login_required
 def delegate(document_id, client, until, propogate):
     if request.method == 'POST':
-        cur = get_db().cursor()
-        SQL = "SELECT until FROM document_owner WHERE uid='{0}' and document_id = {1}"
+        pass
 
 @app.route('/safe_delete/')
-@login_required
+@flask_login.login_required
 def delete():
     pass
 
 @app.route('/logout/')
-@login_required
+@flask_login.login_required
 def logout():
-    logout_user()
+    flask_login.logout_user()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
