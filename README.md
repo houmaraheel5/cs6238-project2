@@ -4,3 +4,6 @@ sudo apt-get install libffi-dev
 sudo apt-get install libssh-dev
 sudo ln -s /usr/include/x86_64-linux-gnu/openssl/opensslconf.h
 /usr/include/openssl/
+
+https://github.com/stef/tlsauth
+https://github.com/stef/flask-tlsauth
