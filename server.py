@@ -10,11 +10,11 @@ BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 DB_PATH = os.path.join(BASE_PATH, "db.db")
 UPLOAD_FOLDER = os.path.join(BASE_PATH, "upload")
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'CHANGE THIS IN PRODUCTION'
+application = Flask(__name__)
+application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+application.secret_key = 'CHANGE THIS IN PRODUCTION'
 login_manager = flask_login.LoginManager()
-login_manager.init_app(app)
+login_manager.init_app(application)
 
 class User(flask_login.UserMixin):
     pass
@@ -30,9 +30,9 @@ def get_db():
     return db
 
 def init_db():
-    with app.app_context():
+    with application.app_context():
         db = get_db()
-        with app.open_resource('schema.sql', mode='r') as f:
+        with application.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
 
@@ -48,7 +48,7 @@ def load_user(user_id):
 def unauthorized_handler():
     return 'Unauthorized'
 
-@app.teardown_appcontext
+@application.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
@@ -107,14 +107,14 @@ def can_read(uid, document_id):
             return True, result["propagate"] # This is going to return only the first propagate
     return False
 
-@app.route('/')
+@application.route('/')
 def index():
     if 'username' in session:
         return 'Logged in as %s' % escape(session['username'])
     return 'You are not logged in'
 
-@app.route('/authenticate/', methods=['GET', 'POST'])
-@app.route('/login/', methods=['GET', 'POST'])
+@application.route('/authenticate/', methods=['GET', 'POST'])
+@application.route('/login/', methods=['GET', 'POST'])
 def authenticate():
     if request.method == 'POST':
         session['username'] = request.form['username']
@@ -126,14 +126,14 @@ def authenticate():
         </form>
     '''
 
-@app.route('/check_out/<document_id>')
+@application.route('/check_out/<document_id>')
 @flask_login.login_required
 def check_out(document_id):
     pass
 
-@app.route('/check_in/<document_id>/<flag>')
-@app.route('/check_in/<document_id>/', defaults={'flag': None})
-@app.route('/check_in/', defaults={'flag': None, 'document_id': None})
+@application.route('/check_in/<document_id>/<flag>')
+@application.route('/check_in/<document_id>/', defaults={'flag': None})
+@application.route('/check_in/', defaults={'flag': None, 'document_id': None})
 @flask_login.login_required
 def check_in(document_id, flag):
     if request.method == 'POST':
@@ -144,26 +144,27 @@ def check_in(document_id, flag):
         file = request.files['file']
         if file:
             filename = secure_filename(session['username'] + file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(application.config['UPLOAD_FOLDER'], filename))
             # TODO: save metadata to DB
 
-@app.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
+# TODO: add ability to propagate and time limit
+@application.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
            defaults={'propogate':False, 'until':None})
 @flask_login.login_required
 def delegate(document_id, client, until, propogate):
     if request.method == 'POST':
         pass
 
-@app.route('/safe_delete/')
+@application.route('/safe_delete/')
 @flask_login.login_required
 def delete():
     pass
 
-@app.route('/logout/')
+@application.route('/logout/')
 @flask_login.login_required
 def logout():
     flask_login.logout_user()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run()
+    application.run()
