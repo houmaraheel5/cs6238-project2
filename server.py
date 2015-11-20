@@ -3,7 +3,6 @@ import sqlite3
 import hashlib
 import datetime
 from flask import Flask, g, request, redirect, url_for, session, escape
-import flask.ext.login as flask_login
 from werkzeug import secure_filename
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -13,11 +12,15 @@ UPLOAD_FOLDER = os.path.join(BASE_PATH, "upload")
 application = Flask(__name__)
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 application.secret_key = 'CHANGE THIS IN PRODUCTION'
-login_manager = flask_login.LoginManager()
-login_manager.init_app(application)
 
-class User(flask_login.UserMixin):
-    pass
+from tlsauth import CertAuthority
+import flask_tlsauth as tlsauth
+
+ca = CertAuthority('../tlsauth/sub-ca')
+
+users = ["Users"]
+
+tlsauth.tlsauth_init(application, ca, groups=users)
 
 def connect_to_database():
     return sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -40,11 +43,6 @@ def get_doc_uid(username, docname):
     m = hashlib.sha256(username + docname)
     return m.hexdigest()
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
-@login_manager.unauthorized_handler
 def unauthorized_handler():
     return 'Unauthorized'
 
@@ -127,14 +125,14 @@ def authenticate():
     '''
 
 @application.route('/check_out/<document_id>')
-@flask_login.login_required
+@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_out(document_id):
     pass
 
 @application.route('/check_in/<document_id>/<flag>')
 @application.route('/check_in/<document_id>/', defaults={'flag': None})
 @application.route('/check_in/', defaults={'flag': None, 'document_id': None})
-@flask_login.login_required
+@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_in(document_id, flag):
     if request.method == 'POST':
         if document_id != None:
@@ -150,21 +148,15 @@ def check_in(document_id, flag):
 # TODO: add ability to propagate and time limit
 @application.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
            defaults={'propogate':False, 'until':None})
-@flask_login.login_required
+@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def delegate(document_id, client, until, propogate):
     if request.method == 'POST':
         pass
 
 @application.route('/safe_delete/')
-@flask_login.login_required
+@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def delete():
     pass
-
-@application.route('/logout/')
-@flask_login.login_required
-def logout():
-    flask_login.logout_user()
-    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     application.run()
