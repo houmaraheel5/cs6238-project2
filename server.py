@@ -129,21 +129,43 @@ def authenticate():
 def check_out(document_id):
     pass
 
-@application.route('/check_in/<document_id>/<flag>')
-@application.route('/check_in/<document_id>/', defaults={'flag': None})
-@application.route('/check_in/', defaults={'flag': None, 'document_id': None})
+@application.route('/check_in/<document_id>/<flag>', methods=['POST'])
+@application.route('/check_in/<document_id>/', defaults={'flag': None}, methods=['POST'])
+@application.route('/check_in/', defaults={'flag': None, 'document_id': None}, methods=['POST'])
 @tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_in(document_id, flag):
     if request.method == 'POST':
-        if document_id != None:
-            uid = session['username']
-            if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
-                return "{0} can not check in {1}".format(uid, document_id)
         file = request.files['file']
         if file:
-            filename = secure_filename(session['username'] + file.filename)
-            file.save(os.path.join(application.config['UPLOAD_FOLDER'], filename))
-            # TODO: save metadata to DB
+            blob = file.read()
+            uid = session['username']
+            if document_id != None:
+                if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
+                    return "{0} can not check in {1}".format(uid, document_id)
+                else:
+                    SQL = "INSERT INTO document (file) VALUES (?) WHERE id = ?;"
+                    # TODO: add encryption
+                    parameters = (blob)
+            else:
+                if flag == "confidentiality":
+                    confidentiality = True
+                    integrity = False
+                elif flag == "integrity":
+                    integrity = True
+                    confidentiality = False
+                else:
+                    integrity = False
+                    confidentiality = False
+
+                document_id = secure_filename(session['username'] + file.filename)
+                filename = secure_filename(file.filename)
+                SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file) VALUES (?, ?, ?, ?, ?, ?, ?);"
+                # TODO: add encryption
+                parameters = (document_id, integrity, confidentiality, uid, filename, blob)
+
+            cur = get_db().cursor()
+            cur.execute(SQL, parameters)
+
 
 # TODO: add ability to propagate and time limit
 @application.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],

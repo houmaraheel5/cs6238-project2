@@ -2,7 +2,9 @@ CREATE TABLE document (
       id text PRIMARY KEY NOT NULL,
       integrity_flag integer(1) DEFAULT(0),
       confidentiality_flag integer(1) DEFAULT(0),
-      owner_uid text(128) NOT NULL
+      owner_uid text(128) NOT NULL,
+      file_name text(128) NOT NULL,
+      file blob
 );
 
 CREATE TABLE document_access (
