@@ -145,7 +145,7 @@ def check_in(document_id, flag):
                 else:
                     SQL = "INSERT INTO document (file) VALUES (?) WHERE id = ?;"
                     # TODO: add encryption
-                    parameters = (blob)
+                    parameters = (sqlite3.Binary(blob))
             else:
                 if flag == "confidentiality":
                     confidentiality = True
@@ -161,7 +161,7 @@ def check_in(document_id, flag):
                 filename = secure_filename(file.filename)
                 SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file) VALUES (?, ?, ?, ?, ?, ?, ?);"
                 # TODO: add encryption
-                parameters = (document_id, integrity, confidentiality, uid, filename, blob)
+                parameters = (document_id, integrity, confidentiality, uid, filename, sqlite3.Binary(blob))
 
             cur = get_db().cursor()
             cur.execute(SQL, parameters)
