@@ -127,7 +127,24 @@ def authenticate():
 @application.route('/check_out/<document_id>')
 @tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_out(document_id):
-    pass
+    # TODO: what happens if file does not exist?
+    uid = session['username']
+    if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_read(uid, document_id)):
+        SQL = "SELECT * FROM document WHERE id = ?;"
+        parameters = (document_id)
+
+        cur = get_db().cursor()
+        cur.execute(SQL, parameters)
+        result = cur.fetchone()
+        result_file = result["file"]
+        filename = result["file_name"]
+
+        response = make_response(result_file)
+        response.headers["Content-Disposition"] = "attachment; filename={0}".format(filename)
+        return response
+    else:
+        return "Access denied"
+
 
 @application.route('/check_in/<document_id>/<flag>', methods=['POST'])
 @application.route('/check_in/<document_id>/', defaults={'flag': None}, methods=['POST'])
@@ -139,6 +156,8 @@ def check_in(document_id, flag):
         if file:
             blob = file.read()
             uid = session['username']
+            SQL = ""
+            parameters = ()
             if document_id != None:
                 if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
                     return "{0} can not check in {1}".format(uid, document_id)
@@ -165,6 +184,8 @@ def check_in(document_id, flag):
 
             cur = get_db().cursor()
             cur.execute(SQL, parameters)
+        else:
+            return "Must submit a file"
 
 
 # TODO: add ability to propagate and time limit
