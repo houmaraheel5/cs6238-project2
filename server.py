@@ -24,8 +24,8 @@ application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserFor
 application.add_url_rule('/tlsauth/certify/', 'certify', tlsauth.renderCSRForm(ca, blindsign=True), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
 application.add_url_rule('/tlsauth/csrs/', 'csrs', tlsauth.showcsrs(ca, groups=users))
-application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca, groups=groups))
-application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=groups))
+application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca, groups=users))
+application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=users))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
 
 app.jinja_loader = jinja2.ChoiceLoader([
