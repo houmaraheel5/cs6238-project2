@@ -20,7 +20,18 @@ ca = CertAuthority('sub-ca')
 
 users = ["Users"]
 
-tlsauth.tlsauth_init(application, ca, groups=users)
+application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserForm(ca), methods=("GET", "POST"))
+application.add_url_rule('/tlsauth/certify/', 'certify', tlsauth.renderCSRForm(ca, blindsign=True), methods=("GET", "POST"))
+application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
+application.add_url_rule('/tlsauth/csrs/', 'csrs', tlsauth.showcsrs(ca, groups=users))
+application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca, groups=groups))
+application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=groups))
+application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
+
+app.jinja_loader = jinja2.ChoiceLoader([
+    app.jinja_loader,
+    jinja2.FileSystemLoader(BASEPATH+'/templates'),
+    ])
 
 def connect_to_database():
     return sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -125,7 +136,6 @@ def authenticate():
     '''
 
 @application.route('/check_out/<document_id>')
-@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_out(document_id):
     # TODO: what happens if file does not exist?
     uid = session['username']
@@ -149,7 +159,6 @@ def check_out(document_id):
 @application.route('/check_in/<document_id>/<flag>', methods=['POST'])
 @application.route('/check_in/<document_id>/', defaults={'flag': None}, methods=['POST'])
 @application.route('/check_in/', defaults={'flag': None, 'document_id': None}, methods=['POST'])
-@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def check_in(document_id, flag):
     if request.method == 'POST':
         file = request.files['file']
@@ -191,13 +200,11 @@ def check_in(document_id, flag):
 # TODO: add ability to propagate and time limit
 @application.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
            defaults={'propogate':False, 'until':None})
-@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def delegate(document_id, client, until, propogate):
     if request.method == 'POST':
         pass
 
 @application.route('/safe_delete/')
-@tlsauth.tlsauth(unauth=unauthorized_handler, groups=users)
 def delete():
     pass
 
