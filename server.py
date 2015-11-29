@@ -16,7 +16,7 @@ application.secret_key = 'CHANGE THIS IN PRODUCTION'
 from tlsauth import CertAuthority
 import flask_tlsauth as tlsauth
 
-ca = CertAuthority('../tlsauth/sub-ca')
+ca = CertAuthority('sub-ca')
 
 users = ["Users"]
 
