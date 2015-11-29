@@ -13,6 +13,7 @@ UPLOAD_FOLDER = os.path.join(BASE_PATH, "upload")
 application = Flask(__name__)
 application.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 application.secret_key = 'CHANGE THIS IN PRODUCTION'
+application.debug = True
 
 from tlsauth import CertAuthority
 import flask_tlsauth as tlsauth
