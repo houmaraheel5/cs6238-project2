@@ -22,6 +22,11 @@ ca = CertAuthority('sub-ca')
 
 users = ["Users"]
 
+application.jinja_loader = jinja2.ChoiceLoader([
+    application.jinja_loader,
+    jinja2.FileSystemLoader(os.path.join(BASE_PATH,'templates')),
+    ])
+
 application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserForm(ca), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/certify/', 'certify', tlsauth.renderCSRForm(ca, blindsign=True), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
@@ -29,11 +34,6 @@ application.add_url_rule('/tlsauth/csrs/', 'csrs', tlsauth.showcsrs(ca, groups=u
 application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca, groups=users))
 application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=users))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
-
-application.jinja_loader = jinja2.ChoiceLoader([
-    application.jinja_loader,
-    jinja2.FileSystemLoader(tlsauth.BASEPATH+'/templates'),
-    ])
 
 def connect_to_database():
     return sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
