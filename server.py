@@ -28,9 +28,9 @@ application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca
 application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=users))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
 
-app.jinja_loader = jinja2.ChoiceLoader([
-    app.jinja_loader,
-    jinja2.FileSystemLoader(BASEPATH+'/templates'),
+application.jinja_loader = jinja2.ChoiceLoader([
+    application.jinja_loader,
+    jinja2.FileSystemLoader(tlsauth.BASEPATH+'/templates'),
     ])
 
 def connect_to_database():
