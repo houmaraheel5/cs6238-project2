@@ -188,6 +188,8 @@ def check_in(document_id, flag):
 
             cur = get_db().cursor()
             cur.execute(SQL, parameters)
+            g.db.commit()
+            return "File checked in"
         else:
             return "Must submit a file"
 
