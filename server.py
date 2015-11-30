@@ -40,6 +40,7 @@ def get_db():
     if db is None:
         db = g._database = connect_to_database()
 	db.row_factory = sqlite3.Row
+        db.text_factory = sqlite3.OptimizedUnicode
     return db
 
 def init_db():
@@ -132,7 +133,7 @@ def check_out(document_id):
         cur = get_db().cursor()
         cur.execute(SQL, parameters)
         result = cur.fetchone()
-        result_file = result["file"]
+        result_file = bytes(result["file"])
         f = Fernet(result["key"])
         # TODO: catch decrypt exceptions
         result_file = f.decrypt(result_file)
