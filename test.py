@@ -50,7 +50,7 @@ class testCheckout(unittest.TestCase):
     def testUnauthorized(self):
         r = requests.get(BASE_URL +  "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, stream=True)
 
-        self.assertEqual(r.text, "Access Denied")
+        self.assertEqual(r.text, "Access denied")
 
 if __name__ == "__main__":
     unittest.main()

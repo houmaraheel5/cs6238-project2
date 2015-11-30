@@ -64,7 +64,7 @@ def close_connection(exception):
 
 def is_owner(uid, document_id):
     SQL = "SELECT id from document WHERE id = ? AND owner_uid = ?;"
-    parameters = (uid, document_id)
+    parameters = (document_id, uid)
     cur = get_db().cursor()
     cur.execute(SQL, parameters)
 
