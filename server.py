@@ -120,27 +120,14 @@ def can_read(uid, document_id):
 
 @application.route('/')
 def index():
-    if 'username' in session:
-        return 'Logged in as %s' % escape(session['username'])
+    if 'dn' in request.environ:
+        return 'Logged in as %s' % escape(request.environ["dn"])
     return 'You are not logged in'
-
-@application.route('/authenticate/', methods=['GET', 'POST'])
-@application.route('/login/', methods=['GET', 'POST'])
-def authenticate():
-    if request.method == 'POST':
-        session['username'] = request.form['username']
-        return redirect(url_for('index'))
-    return '''
-        <form action="" method="post">
-            <p><input type=text name=username>
-            <p><input type=submit value=Login>
-        </form>
-    '''
 
 @application.route('/check_out/<document_id>')
 def check_out(document_id):
     # TODO: what happens if file does not exist?
-    uid = session['username']
+    uid = request.environ['dn']
     if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_read(uid, document_id)):
         SQL = "SELECT * FROM document WHERE id = ?;"
         parameters = (document_id)
@@ -166,7 +153,7 @@ def check_in(document_id, flag):
         file = request.files['file']
         if file:
             blob = file.read()
-            uid = session['username']
+            uid = request.environ['dn']
             SQL = ""
             parameters = ()
             if document_id != None:
@@ -209,6 +196,10 @@ def delegate(document_id, client, until, propogate):
 @application.route('/safe_delete/')
 def delete():
     pass
+
+@application.route('/debug/')
+def debug():
+    return str(request.environ)
 
 if __name__ == '__main__':
     application.run()
