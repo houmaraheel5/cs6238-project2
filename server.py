@@ -177,7 +177,7 @@ def check_in(document_id, flag):
                     integrity = False
                     confidentiality = False
 
-                document_id = secure_filename(session['username'] + file.filename)
+                document_id = secure_filename(request.environ['dn'] + file.filename)
                 filename = secure_filename(file.filename)
                 SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file) VALUES (?, ?, ?, ?, ?, ?, ?);"
                 # TODO: add encryption
