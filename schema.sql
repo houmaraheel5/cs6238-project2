@@ -4,6 +4,7 @@ CREATE TABLE document (
       confidentiality_flag integer(1) DEFAULT(0),
       owner_uid text(128) NOT NULL,
       file_name text(128) NOT NULL,
+      key text(128) NOT NULL,
       file blob
 );
 

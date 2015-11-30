@@ -5,6 +5,7 @@ import datetime
 import jinja2
 from flask import Flask, g, request, redirect, url_for, session, escape
 from werkzeug import secure_filename
+from cryptography.fernet import Fernet
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 DB_PATH = os.path.join(BASE_PATH, "db.db")
@@ -132,6 +133,10 @@ def check_out(document_id):
         cur.execute(SQL, parameters)
         result = cur.fetchone()
         result_file = result["file"]
+        f = Fernet(result["key"])
+        # TODO: catch decrypt exceptions
+        result_file = f.decrypt(result_file)
+
         filename = result["file_name"]
 
         response = make_response(result_file)
@@ -156,9 +161,11 @@ def check_in(document_id, flag):
                 if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
                     return "{0} can not check in {1}".format(uid, document_id)
                 else:
-                    SQL = "INSERT INTO document (file) VALUES (?) WHERE id = ?;"
-                    # TODO: add encryption
-                    parameters = (sqlite3.Binary(blob))
+                    SQL = "INSERT INTO document (file, key) VALUES (?, ?) WHERE id = ?;"
+                    key = Fernet.generate_key()
+                    f = Fernet(key)
+                    blob = f.encrypt(blob)
+                    parameters = (sqlite3.Binary(blob), key, document_id)
             else:
                 if flag == "confidentiality":
                     confidentiality = True
