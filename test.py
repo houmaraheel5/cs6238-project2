@@ -45,6 +45,7 @@ class testCheckout(unittest.TestCase):
         for chunk in r.iter_content(16):
             f.write(chunk)
         f.seek(0)
+        upload.seek(0)
         self.assertEqual(f.read(), upload.read())
 
     def testUnauthorized(self):
