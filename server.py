@@ -183,12 +183,12 @@ def check_in(document_id, flag):
                 f = Fernet(key)
                 blob = f.encrypt(blob)
                 SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file, key) VALUES (?, ?, ?, ?, ?, ?, ?);"
-                # TODO: add encryption
                 parameters = (document_id, integrity, confidentiality, uid, filename, sqlite3.Binary(blob), key)
 
-            cur = get_db().cursor()
+            db = get_db()
+            cur = db.cursor()
             cur.execute(SQL, parameters)
-            g.db.commit()
+            db.commit()
             return "File checked in"
         else:
             return "Must submit a file"
