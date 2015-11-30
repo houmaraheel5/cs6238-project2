@@ -189,7 +189,7 @@ def check_in(document_id, flag):
             cur = db.cursor()
             cur.execute(SQL, parameters)
             db.commit()
-            return "File checked in"
+            return "{0}".format(document_id)
         else:
             return "Must submit a file"
 
