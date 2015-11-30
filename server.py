@@ -179,9 +179,12 @@ def check_in(document_id, flag):
 
                 document_id = secure_filename(request.environ['dn'] + file.filename)
                 filename = secure_filename(file.filename)
-                SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file) VALUES (?, ?, ?, ?, ?, ?, ?);"
+                key = Fernet.generate_key()
+                f = Fernet(key)
+                blob = f.encrypt(blob)
+                SQL = "INSERT INTO document (id, integrity_flag, confidentiality_flag, owner_uid, file_name, file, key) VALUES (?, ?, ?, ?, ?, ?, ?);"
                 # TODO: add encryption
-                parameters = (document_id, integrity, confidentiality, uid, filename, sqlite3.Binary(blob))
+                parameters = (document_id, integrity, confidentiality, uid, filename, sqlite3.Binary(blob), key)
 
             cur = get_db().cursor()
             cur.execute(SQL, parameters)
