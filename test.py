@@ -33,7 +33,7 @@ class testCheckin(unittest.TestCase):
         upload.write(os.urandom(64))
         upload.seek(0)
 
-        r = requests.post(BASE_URL + "check_in/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name) + "/", verify=False, files={'file': upload})
+        r = requests.post(BASE_URL + "check_in/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name) + "/", cert=cert, verify=False, files={'file': upload})
 
         self.assertEqual(r.text,"CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name)) 
 

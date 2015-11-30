@@ -127,7 +127,7 @@ def check_out(document_id):
     uid = request.environ['dn']
     if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_read(uid, document_id)):
         SQL = "SELECT * FROM document WHERE id = ?;"
-        parameters = (document_id)
+        parameters = (document_id,)
 
         cur = get_db().cursor()
         cur.execute(SQL, parameters)
@@ -161,7 +161,7 @@ def check_in(document_id, flag):
                 if not (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_write(uid, document_id)):
                     return "{0} can not check in {1}".format(uid, document_id)
                 else:
-                    SQL = "INSERT INTO document (file, key) VALUES (?, ?) WHERE id = ?;"
+                    SQL = "UPDATE document SET file = ?, key = ? WHERE id = ?;"
                     key = Fernet.generate_key()
                     f = Fernet(key)
                     blob = f.encrypt(blob)
