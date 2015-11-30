@@ -28,11 +28,7 @@ application.jinja_loader = jinja2.ChoiceLoader([
     ])
 
 application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserForm(ca), methods=("GET", "POST"))
-application.add_url_rule('/tlsauth/certify/', 'certify', tlsauth.renderCSRForm(ca, blindsign=True), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
-application.add_url_rule('/tlsauth/csrs/', 'csrs', tlsauth.showcsrs(ca, groups=users))
-application.add_url_rule('/tlsauth/sign/<string:id>', 'sign', tlsauth.certify(ca, groups=users))
-application.add_url_rule('/tlsauth/reject/<string:id>', 'reject', tlsauth.reject(ca, groups=users))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
 
 def connect_to_database():
@@ -202,4 +198,6 @@ def debug():
     return str(request.environ)
 
 if __name__ == '__main__':
+    if not os.path.exists(DB_PATH):
+        init_db()
     application.run()
