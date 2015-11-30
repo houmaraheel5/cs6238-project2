@@ -88,8 +88,8 @@ def is_effective_owner(uid, document_id):
     return False
 
 def can_write(uid, document_id):
-    SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = WRITE;"
-    parameters = (document_id, uid)
+    SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = ?;"
+    parameters = (document_id, uid, "WRITE")
 
     cur = get_db().cursor()
     cur.execute(SQL, parameters)
@@ -102,8 +102,8 @@ def can_write(uid, document_id):
     return False
 
 def can_read(uid, document_id):
-    SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = READ;"
-    parameters = (document_id, uid)
+    SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = ?;"
+    parameters = (document_id, uid, "READ")
 
     cur = get_db().cursor()
     cur.execute(SQL, parameters)
