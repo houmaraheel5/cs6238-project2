@@ -24,7 +24,8 @@ class testAuthentication(unittest.TestCase):
 
 class testCheckin(unittest.TestCase):
     def testNewCheckin(self):
-        r = requests.post(BASE_URL + "check_in/", verify=False, cert=cert, files={'file': upload.seek(0)})
+        upload.seek(0)
+        r = requests.post(BASE_URL + "check_in/", verify=False, cert=cert, files={'file': upload})
 
         self.assertEqual(r.text, "CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))
 
@@ -38,16 +39,16 @@ class testCheckin(unittest.TestCase):
 
 class testCheckout(unittest.TestCase):
     def testCheckout(self):
-        r = requests.post(BASE_URL + "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert, stream=True) 
+        r = requests.get(BASE_URL + "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert, stream=True) 
 
-        with open(tempfile.TemporaryFile(), "w+b") as f:
-            for chunk in r.iter_content(16):
-                f.write(chunk)
-            f.seek(0)
-            self.assertEqual(f.read(), upload.read())
+        f = tempfile.TemporaryFile()
+        for chunk in r.iter_content(16):
+            f.write(chunk)
+        f.seek(0)
+        self.assertEqual(f.read(), upload.read())
 
     def testUnauthorized(self):
-        r = requests.post(BASE_URL +  "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, stream=True)
+        r = requests.get(BASE_URL +  "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, stream=True)
 
         self.assertEqual(r.text, "Access Denied")
 

@@ -63,7 +63,7 @@ def close_connection(exception):
         db.close()
 
 def is_owner(uid, document_id):
-    SQL = "SELECT id from document WHERE id = ? AND owner_id = ?;"
+    SQL = "SELECT id from document WHERE id = ? AND owner_uid = ?;"
     parameters = (uid, document_id)
     cur = get_db().cursor()
     cur.execute(SQL, parameters)
@@ -121,7 +121,7 @@ def index():
         return 'Logged in as %s' % escape(request.environ["dn"])
     return 'You are not logged in'
 
-@application.route('/check_out/<document_id>')
+@application.route('/check_out/<document_id>', methods=['GET'])
 def check_out(document_id):
     # TODO: what happens if file does not exist?
     uid = request.environ['dn']
