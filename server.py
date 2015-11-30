@@ -3,7 +3,7 @@ import sqlite3
 import hashlib
 import datetime
 import jinja2
-from flask import Flask, g, request, redirect, url_for, session, escape
+from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
 from cryptography.fernet import Fernet
 
