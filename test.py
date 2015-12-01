@@ -53,5 +53,11 @@ class testCheckout(unittest.TestCase):
 
         self.assertEqual(r.text, "Access denied")
 
+class testDelete(unittest.TestCase):
+    def testDelete(self):
+        r = requets.get(BASE_URL + "safe_delete/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert)
+
+        self.assertEqual(r.text, "Document deleted")
+
 if __name__ == "__main__":
     unittest.main()
