@@ -202,8 +202,27 @@ def delegate(document_id, client, until, propogate):
     if request.method == 'POST':
         pass
 
-@application.route('/safe_delete/')
-def delete():
+@application.route('/safe_delete/<document_id>', methods=['GET'])
+def delete(document_id):
+    uid = request.environ['dn']
+    if (is_owner(uid, document_id) or is_effective_owner(uid, document_id)):
+        db = get_db()
+        cur = db.cursor()
+        
+        cur.execute("SELECT id FROM document WHERE id = ?;", (document_id,))
+
+        if cur.fetchone():
+            cur.execute("DELETE FROM document where id = ?;", (document_id,))
+            db.commit()
+            return "Document deleted"
+        else:
+            return "Document ({0}) does not exist".format(document_id)
+    else:
+        return "Unauthorized"
+
+
+@application.route('/get_entitlements/', methods=['GET'])
+def get_entitlements():
     pass
 
 @application.route('/debug/')
