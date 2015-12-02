@@ -187,7 +187,7 @@ def check_in(document_id, flag):
                     integrity = False
                     confidentiality = False
 
-                document_id = hashlib.sha1(secure_filename(request.environ['dn'] + file.filename))
+                document_id = hashlib.sha1(secure_filename(request.environ['dn'] + file.filename)).hexdigest()
                 filename = secure_filename(file.filename)
                 key = Fernet.generate_key()
                 f = Fernet(key)
