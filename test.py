@@ -4,6 +4,8 @@ import unittest
 import os
 import json
 import tempfile
+import hashlib
+from werkzeug import secure_filename
 
 BASEDIR  = os.path.dirname(os.path.realpath(__file__))
 BASE_URL = "https://vps.kylekoza.com/"
@@ -28,19 +30,23 @@ class testCheckin(unittest.TestCase):
         upload.seek(0)
         r = requests.post(BASE_URL + "check_in/", verify=False, cert=cert, files={'file': upload})
 
-        self.assertEqual(r.text, "CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))
+        self.assertEqual(r.text, hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest())
 
     def testUpdate(self):
         upload.write(os.urandom(64))
         upload.seek(0)
 
-        r = requests.post(BASE_URL + "check_in/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name) + "/", cert=cert, verify=False, files={'file': upload})
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
 
-        self.assertEqual(r.text,"CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))
+        r = requests.post(BASE_URL + "check_in/" + document_id + "/", cert=cert, verify=False, files={'file': upload})
+
+        self.assertEqual(r.text, hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest())
 
 class testCheckout(unittest.TestCase):
     def testCheckout(self):
-        r = requests.get(BASE_URL + "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert, stream=True)
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+
+        r = requests.get(BASE_URL + "check_out/" + document_id, verify=False, cert=cert, stream=True)
 
         f = tempfile.TemporaryFile()
         for chunk in r.iter_content(16):
@@ -50,13 +56,17 @@ class testCheckout(unittest.TestCase):
         self.assertEqual(f.read(), upload.read())
 
     def testUnauthorized(self):
-        r = requests.get(BASE_URL +  "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, stream=True)
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+
+        r = requests.get(BASE_URL +  "check_out/" + document_id, verify=False, stream=True)
 
         self.assertEqual(r.text, "Access denied")
 
 class testDelete(unittest.TestCase):
     def testDelete(self):
-        r = requests.get(BASE_URL + "safe_delete/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert)
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+
+        r = requests.get(BASE_URL + "safe_delete/" + document_id, verify=False, cert=cert)
 
         self.assertEqual(r.text, "Document deleted")
 
