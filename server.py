@@ -224,12 +224,25 @@ def check_in(document_id, flag):
             return "Must submit a file"
 
 
-# TODO: add ability to propagate and time limit
-@application.route('/delegate/<document_id>/<client>/<permission>', methods=['GET', 'POST'],
-           defaults={'propogate':False, 'until':None})
-def delegate(document_id, client, until, propogate):
-    if request.method == 'POST':
+@application.route('/delegate/<document_id>/<client>/<permission>/<propagate>/<until>', methods=['GET', 'POST'])
+@application.route('/delegate/<document_id>/<client>/<permission>/<propagate>', methods=['GET', 'POST'],
+           defaults={'until': datetime.datetime.utcnow() + datetime.timedelta(days=30)})
+def delegate(document_id, client, until, permission, propogate):
+    # TODO: read in until from text as datetime.datetime
+    uid = request.environ['dn']
+    if permission.lower() == "read":
+        if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_propagate_read(uid, document_id)):
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("INSERT INTO document_access (uid, document_id, until, permission, propagate) VALUES (?, ?, ?, ?, ?);", (client, document_id, until, permission, propagate))
+
+            return "Successfully delegated read access to {0} for {1}".format(document_id, client)
+
+    elif permission.lower() == "write":
         pass
+    elif permission.lower() == "owner":
+        pass
+    return "Unsuccessful"
 
 @application.route('/safe_delete/<document_id>', methods=['GET'])
 def delete(document_id):

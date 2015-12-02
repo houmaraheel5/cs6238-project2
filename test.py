@@ -62,14 +62,6 @@ class testCheckout(unittest.TestCase):
 
         self.assertEqual(r.text, "Access denied")
 
-class testDelete(unittest.TestCase):
-    def testDelete(self):
-        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
-
-        r = requests.get(BASE_URL + "safe_delete/" + document_id, verify=False, cert=cert)
-
-        self.assertEqual(r.text, "Document deleted")
-
 class Entitlements(unittest.TestCase):
     def GetEntitlements(self):
         r = requests.get(BASE_URL + "get_entitlements/", cert=cert, verify=False)
@@ -77,6 +69,47 @@ class Entitlements(unittest.TestCase):
         result = json.loads(r.text)
 
         self.assertEqual(result["status"], "success")
+
+class Delegation(unittest.TestCase):
+    def DelegateReadNoProagateNoTime(self):
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+        client_id = "" # TODO
+
+        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/READ/False/", cert=cert, verify=False)
+
+        self.assertEqual(r.text, "Successfully delegated read access to {0} for {1}".format(document_id, client_id))
+
+    def DelegateReadProagateTime(self):
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+        client_id = "" # TODO
+
+        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/READ/True/" + str(datetime.datetime.utcnow() + datetime.timedelta(days=5)) + "/", cert=cert, verify=False)
+
+        self.assertEqual(r.text, "Successfully delegated read access to {0} for {1}".format(document_id, client_id))
+
+    def DelegateWriteNoProagateNoTime(self):
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+        client_id = "" # TODO
+
+        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/WRITE/False/", cert=cert, verify=False)
+
+        self.assertEqual(r.text, "Successfully delegated write access to {0} for {1}".format(document_id, client_id))
+
+    def DelegateWriteProagateTime(self):
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+        client_id = "" # TODO
+
+        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/WRITE/True/" + str(datetime.datetime.utcnow() + datetime.timedelta(days=5)) + "/", cert=cert, verify=False)
+
+        self.assertEqual(r.text, "Successfully delegated write access to {0} for {1}".format(document_id, client_id))
+
+class testDelete(unittest.TestCase):
+    def testDelete(self):
+        document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
+
+        r = requests.get(BASE_URL + "safe_delete/" + document_id, verify=False, cert=cert)
+
+        self.assertEqual(r.text, "Document deleted")
 
 if __name__ == "__main__":
     unittest.main()
