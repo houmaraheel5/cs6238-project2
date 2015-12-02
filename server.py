@@ -3,6 +3,7 @@ import sqlite3
 import hashlib
 import datetime
 import jinja2
+import json
 from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
 from cryptography.fernet import Fernet
@@ -231,7 +232,24 @@ def delete(document_id):
 
 @application.route('/get_entitlements/', methods=['GET'])
 def get_entitlements():
-    pass
+    uid = request.environ['dn']
+    db = get_db()
+    result = []
+    cur = db.cursor()
+    cur.execute("SELECT id,owner_uid,file_name FROM document WHERE owner_uid = ?;", (uid,))
+    for row in cur:
+        temp = dict(row)
+        temp["document_id"] = temp.pop("id")
+        result.append(temp)
+    cur.execute("SELECT document_id,permission,propagate,until FROM document_access WHERE uid = ?;", (uid,))
+    for row in cur:
+        if row["until"] > datetime.datetime.utcnow():
+            result.append(dict(row))
+    cur.execute("SELECT document_id,until FROM document_owner WHERE uid = ?;", (uid,))
+    for row in cur:
+        if row["until"] > datetime.datetime.utcnow():
+            result.append(dict(row))
+    return json.dumps({"status": "success", "entitlements": result})
 
 @application.route('/debug/')
 def debug():
