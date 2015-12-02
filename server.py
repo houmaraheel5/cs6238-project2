@@ -241,8 +241,7 @@ def get_entitlements():
     for row in cur:
         if row["until"] > datetime.datetime.utcnow():
             result.append(dict(row))
-    result.append({"status": "success"})
-    return json.dumps(result)
+    return json.dumps({"status": "success", "entitlements": result})
 
 @application.route('/debug/')
 def debug():

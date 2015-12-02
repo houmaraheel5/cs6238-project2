@@ -2,6 +2,7 @@ import requests
 import uuid
 import unittest
 import os
+import json
 import tempfile
 
 BASEDIR  = os.path.dirname(os.path.realpath(__file__))
@@ -35,11 +36,11 @@ class testCheckin(unittest.TestCase):
 
         r = requests.post(BASE_URL + "check_in/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name) + "/", cert=cert, verify=False, files={'file': upload})
 
-        self.assertEqual(r.text,"CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name)) 
+        self.assertEqual(r.text,"CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))
 
 class testCheckout(unittest.TestCase):
     def testCheckout(self):
-        r = requests.get(BASE_URL + "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert, stream=True) 
+        r = requests.get(BASE_URL + "check_out/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert, stream=True)
 
         f = tempfile.TemporaryFile()
         for chunk in r.iter_content(16):
@@ -55,9 +56,17 @@ class testCheckout(unittest.TestCase):
 
 class testDelete(unittest.TestCase):
     def testDelete(self):
-        r = requets.get(BASE_URL + "safe_delete/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert)
+        r = requests.get(BASE_URL + "safe_delete/CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name), verify=False, cert=cert)
 
         self.assertEqual(r.text, "Document deleted")
+
+class Entitlements(unittest.TestCase):
+    def GetEntitlements(self):
+        r = requests.get(BASE_URL + "get_entitlements/", cert=cert, verify=False)
+
+        result = json.loads(r.text)
+
+        self.assertEqual(result["status"], "success")
 
 if __name__ == "__main__":
     unittest.main()
