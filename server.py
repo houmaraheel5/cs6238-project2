@@ -233,7 +233,7 @@ def get_entitlements():
         temp = dict(row)
         temp["document_id"] = temp.pop("id")
         result.append(temp)
-    cur.execute("SELECT document_id,permission,propogate,until FROM document_access WHERE uid = ?;", (uid,))
+    cur.execute("SELECT document_id,permission,propagate,until FROM document_access WHERE uid = ?;", (uid,))
     for row in cur:
         if row["until"] > datetime.datetime.utcnow():
             result.append(dict(row))
