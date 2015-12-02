@@ -51,7 +51,7 @@ def init_db():
         db.commit()
 
 def get_doc_uid(username, docname):
-    m = hashlib.sha256(username + docname)
+    m = hashlib.sha1(secure_filename(username + docname))
     return m.hexdigest()
 
 def unauthorized_handler():
@@ -186,7 +186,7 @@ def check_in(document_id, flag):
                     integrity = False
                     confidentiality = False
 
-                document_id = secure_filename(request.environ['dn'] + file.filename)
+                document_id = hashlib.sha1(secure_filename(request.environ['dn'] + file.filename))
                 filename = secure_filename(file.filename)
                 key = Fernet.generate_key()
                 f = Fernet(key)
