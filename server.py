@@ -98,14 +98,24 @@ def can_write(uid, document_id):
 
     results = cur.fetchall()
 
-    can_write = False
-    can_propogate = False
     for result in results:
         if result["until"] > datetime.datetime.utcnow():
-            can_write = True
-            if result["propagate"]:
-                can_propogate = True
-    return can_write, can_propogate
+            return True
+    return False
+
+def can_propagate_write(uid, document_id):
+    SQL = "SELECT until FROM document_access WHERE document_id = ? AND uid = ? AND permission = ? AND propagate = ?;"
+    parameters = (document_id, uid, "WRITE", True)
+
+    cur = get_db().cursor()
+    cur.execute(SQL, parameters)
+
+    results = cur.fetchall()
+
+    for result in results:
+        if result["until"] > datetime.datetime.utcnow():
+            return True
+    return False
 
 def can_read(uid, document_id):
     SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = ?;"
@@ -116,14 +126,24 @@ def can_read(uid, document_id):
 
     results = cur.fetchall()
 
-    can_read = False
-    can_propogate = False
     for result in results:
         if result["until"] > datetime.datetime.utcnow():
-            can_read = True
-            if result["propogate"]:
-                can_propogate = True
-    return can_read, can_propogate
+            return True
+    return False
+
+def can_propagate_read(uid, document_id):
+    SQL = "SELECT until FROM document_access WHERE document_id = ? AND uid = ? AND permission = ? AND propagate = ?;"
+    parameters = (document_id, uid, "READ", True)
+
+    cur = get_db().cursor()
+    cur.execute(SQL, parameters)
+
+    results = cur.fetchall()
+
+    for result in results:
+        if result["until"] > datetime.datetime.utcnow():
+            return True
+    return False
 
 @application.route('/')
 def index():
