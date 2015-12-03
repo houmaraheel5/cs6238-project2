@@ -340,7 +340,7 @@ def register(name):
     response.headers["Content-Disposition"] = "attachment; filename=certificates.zip"
 
     serial_save["serial"] = serial + 1
-    serial.save.close()
+    serial_save.close()
 
     # TODO: figure out how to get dn and save in db
     # db = get_db()
