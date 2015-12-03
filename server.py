@@ -6,7 +6,7 @@ import hashlib
 import datetime
 import jinja2
 import json
-import pyopenssl
+import OpenSSL
 import shelve
 from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
@@ -289,7 +289,7 @@ def get_users():
 def debug():
     return str(request.environ)
 
-@application.route('/register/<name>', methods=['POST'])
+@application.route('/register/<name>', methods=['GET'])
 def register(name):
     # TODO: check if client already exists, so as not to generate duplicate certs
     with open(os.path.join(BASE_PATH, "sub-ca/public/root.pem"), "rb") as f:
