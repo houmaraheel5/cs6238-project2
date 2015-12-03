@@ -271,6 +271,16 @@ def get_entitlements():
             result.append(dict(row))
     return json.dumps({"status": "success", "entitlements": result})
 
+@application.route('/get_users/', methods=['GET'])
+def get_users():
+    db = get_db()
+    result = []
+    cur = db.cursor()
+    cur.execute("SELECT uid from users;")
+    for row in cur:
+        result.append({"uid": row["uid"]})
+    return json.dumps({"status": "success", "users": result})
+
 @application.route('/debug/')
 def debug():
     return str(request.environ)
