@@ -89,6 +89,20 @@ def is_effective_owner(uid, document_id):
             return True
     return False
 
+def can_propagate_ownership(uid, document_id):
+    SQL = "SELECT until from document_owner WHERE document_id = ? and uid = ? and propagate = ?;"
+    parameters = (document_id, uid, True)
+
+    cur = get_db().cursor()
+    cur.execute(SQL, paramters)
+
+    results = cur.fetchall()
+
+    for result in results:
+        if result["until"] > datetime.datetime.utcnow():
+            return True
+    return False
+
 def can_write(uid, document_id):
     SQL = "SELECT until, propagate FROM document_access WHERE document_id = ? AND uid = ? AND permission = ?;"
     parameters = (document_id, uid, "WRITE")
@@ -230,18 +244,36 @@ def check_in(document_id, flag):
 def delegate(document_id, client, until, permission, propogate):
     # TODO: read in until from text as datetime.datetime
     uid = request.environ['dn']
-    if permission.lower() == "read":
+    if permission.upper() == "READ":
         if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_propagate_read(uid, document_id)):
             db = get_db()
             cur = db.cursor()
             cur.execute("INSERT INTO document_access (uid, document_id, until, permission, propagate) VALUES (?, ?, ?, ?, ?);", (client, document_id, until, permission, propagate))
 
+            db.commit()
             return "Successfully delegated read access to {0} for {1}".format(document_id, client)
+        else:
+            return "{0} is not able to delegate read access to {1}".format(client, document_id)
+    elif permission.upper() == "WRITE":
+        if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_propagate_write(uid, document_id)):
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("INSERT INTO document_access (uid, document_id, until, permission, propagate) VALUES (?, ?, ?, ?, ?);", (client, document_id, until, permission, propagate))
 
-    elif permission.lower() == "write":
-        pass
-    elif permission.lower() == "owner":
-        pass
+            db.commit()
+            return "Successfully delegated write access to {0} for {1}".format(document_id, client)
+        else:
+            return "{0} is not able to delegate write access to {1}".format(client, document_id)
+    elif permission.upper() == "OWNER":
+        if (is_owner(uid, document_id) or can_propagate_ownership(uid, document_id)):
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("INSERT INTO document_owner (uid, document_id, until, propagate) VALUES (?, ?, ?, ?);", (client, document_id, until, propagate))
+
+            db.commit()
+            return "Successfully delegated ownership to {0} for {1}".format(document_id, client)
+        else:
+            return "{0} is not able to delegate ownership on {1}".format(client, document_id)
     return "Unsuccessful"
 
 @application.route('/safe_delete/<document_id>', methods=['GET'])
@@ -250,7 +282,7 @@ def delete(document_id):
     if (is_owner(uid, document_id) or is_effective_owner(uid, document_id)):
         db = get_db()
         cur = db.cursor()
-        
+
         cur.execute("SELECT id FROM document WHERE id = ?;", (document_id,))
 
         if cur.fetchone():

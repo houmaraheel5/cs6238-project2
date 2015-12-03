@@ -21,6 +21,7 @@ CREATE TABLE document_owner (
       uid text(128) NOT NULL,
       document_id text(128) NOT NULL,
       until TEXT,
+      propagate integer(1) DEFAULT(0),
       PRIMARY KEY(uid, document_id)
 );
 
