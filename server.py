@@ -336,11 +336,9 @@ def register(name):
     archive.writestr("{0}.key".format(name), outkey)
     archive.close()
 
-    response = make_response(zip_file)
+    response = make_response(zip_file.getvalue())
     response.headers["Content-Disposition"] = "attachment; filename=certificates.zip"
 
-    outcert.close()
-    outkey.close()
     serial_save["serial"] = serial + 1
     serial.save.close()
 
