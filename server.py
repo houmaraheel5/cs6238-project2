@@ -33,7 +33,6 @@ application.jinja_loader = jinja2.ChoiceLoader([
     jinja2.FileSystemLoader(os.path.join(BASE_PATH,'templates')),
     ])
 
-application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserForm(ca), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
 
