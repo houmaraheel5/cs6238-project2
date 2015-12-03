@@ -25,7 +25,8 @@ CREATE TABLE document_owner (
 );
 
 CREATE TABLE users (
-      uid text PRIMARY KEY NOT NULL
+      uid text PRIMARY KEY NOT NULL,
+      short_name TEXT
 );
 
 PRAGMA secure_delete = true;
