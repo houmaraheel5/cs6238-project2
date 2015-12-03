@@ -1,9 +1,13 @@
 import os
+import zipfile
+import StringIO
 import sqlite3
 import hashlib
 import datetime
 import jinja2
 import json
+import OpenSSL
+import shelve
 from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
 from cryptography.fernet import Fernet
@@ -29,7 +33,6 @@ application.jinja_loader = jinja2.ChoiceLoader([
     jinja2.FileSystemLoader(os.path.join(BASE_PATH,'templates')),
     ])
 
-application.add_url_rule('/tlsauth/register/', 'register', tlsauth.renderUserForm(ca), methods=("GET", "POST"))
 application.add_url_rule('/tlsauth/cert/', 'cert', tlsauth.renderCert(ca))
 application.add_url_rule('/tlsauth/test/', 'test', tlsauth.testAuth)
 
@@ -284,6 +287,67 @@ def get_users():
 @application.route('/debug/')
 def debug():
     return str(request.environ)
+
+@application.route('/register/<name>', methods=['GET'])
+def register(name):
+    # TODO: check if client already exists, so as not to generate duplicate certs
+    with open(os.path.join(BASE_PATH, "sub-ca/public/root.pem"), "rb") as f:
+        issuerCert = f.read()
+        issuerCert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, issuerCert)
+
+    with open(os.path.join(BASE_PATH, "sub-ca/private/root.pem"), "rb") as f:
+        issuerKey = f.read()
+        issuerKey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, issuerKey)
+
+    pkey = OpenSSL.crypto.PKey()
+    pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 1024)
+    req = OpenSSL.crypto.X509Req()
+    req.set_pubkey(pkey)
+    name = {"C": "US", "ST": "Georgia", "L": "Atlanta", "O": "CS6238", "OU": "Project2", "CN": name}
+
+    subj = req.get_subject()
+    for (key, value) in name.items():
+        setattr(subj, key, value)
+
+    req.sign(pkey, "md5")
+
+    cert = OpenSSL.crypto.X509()
+
+    serial_save = shelve.open('serial.db')
+    if serial_save.has_key("serial"):
+        serial = serial_save["serial"]
+    else:
+        serial = 100
+
+    cert.set_serial_number(serial)
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(365 * 24 * 60 * 60)
+    cert.set_issuer(issuerCert.get_subject())
+    cert.set_subject(req.get_subject())
+    cert.set_pubkey(req.get_pubkey())
+    cert.sign(issuerKey, "md5")
+
+    outcert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+    outkey = OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_PEM, pkey)
+
+    zip_file = StringIO.StringIO()
+    archive = zipfile.ZipFile(zip_file, "w")
+    archive.writestr("{0}.pem".format(name), outcert)
+    archive.writestr("{0}.key".format(name), outkey)
+    archive.close()
+
+    response = make_response(zip_file.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=certificates.zip"
+
+    serial_save["serial"] = serial + 1
+    serial_save.close()
+
+    # TODO: figure out how to get dn and save in db
+    # db = get_db()
+    # cur = db.cursor()
+    # cur.execute("INSERT INTO users (uid, name) VALUES (?, ?);", (,))
+
+    return response
 
 if __name__ == '__main__':
     if not os.path.exists(DB_PATH):
