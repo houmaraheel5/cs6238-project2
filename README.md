@@ -130,3 +130,63 @@ cp ca.key sub-ca/private/root.pem
 sudo service cs6238 start
 sudo service nginx start
 ```
+
+## API Endpoints
+See client.py and test.py for examples of the below endpoints.
+### Register
+```
+Method: get
+Authentication not required
+Endpoint: /register/<name>
+```
+### List clients and client ids
+```
+Method: get
+Authentication required
+Endpoint: /get_users/
+```
+### List documents and document_ids available to you
+```
+Method: get
+Authentication required
+Endpoint: /get_entitlements/
+```
+### Checkin document
+```
+Method: post
+Authentication required
+```
+#### Endpoints
+To check in a document with a security flag:
+`/check_in/<document_id>/<flag>`
+`flag` must be either integirty, confidentiality, or none (default)
+
+To check in a document with the default flag:
+`/check_in/<document_id>/`
+
+To check in a new document that has not yet been assigned a document_id:
+`/check_in/`
+
+All of these require the document to be posted as a file.
+### Checkout document
+```
+Method: get
+Authentication required
+Endpoint: /check_out/<document_id>
+```
+### Delegate access
+```
+Method: post
+Authentication required
+Endpoint: /delegate/<document_id>/
+```
+This endpoint expects parameters posted in json format. 
+```
+Client: the client_id (can be obtained via /get_users/ endpoint
+Propagate: true or false (default)
+Until: A string representation of the time access should be revoked
+(defaults to 30 days after access is granted)
+Permission: READ, WRITE, OWNER
+```
+Example:
+{"client": "<client_id>", "propagate": true, "until": "2015-12-09 23:04:04.261565", "permission": "READ"}
