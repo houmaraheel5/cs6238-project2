@@ -341,7 +341,7 @@ def get_users():
     cur = db.cursor()
     cur.execute("SELECT uid from users;")
     for row in cur:
-        result.append({"uid": row["uid"]})
+        result.append({"uid": row["uid"], "name": row["short_name"]})
     return json.dumps({"status": "success", "users": result})
 
 @application.route('/debug/')
