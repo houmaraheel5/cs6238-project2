@@ -11,6 +11,7 @@ import shelve
 from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
 from cryptography.fernet import Fernet
+from functools import wraps
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 DB_PATH = os.path.join(BASE_PATH, "db.db")
@@ -62,11 +63,13 @@ def unauthorized_handler():
     return 'Unauthorized'
 
 def login_required(func):
+    @wraps(func)
     def decorated(*args, **kwargs):
         if dn in request.environ:
             return func(*args, **kwargs)
         else:
             return unauthorized_handler()
+    return decorated
 
 @application.teardown_appcontext
 def close_connection(exception):
@@ -351,8 +354,8 @@ def get_users():
         result.append({"uid": row["uid"], "name": row["short_name"]})
     return json.dumps({"status": "success", "users": result})
 
-@login_required
 @application.route('/debug/')
+@login_required
 def debug():
     return str(request.environ)
 
