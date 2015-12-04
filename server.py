@@ -342,10 +342,11 @@ def register(name):
     serial_save["serial"] = serial + 1
     serial_save.close()
 
-    # TODO: figure out how to get dn and save in db
-    # db = get_db()
-    # cur = db.cursor()
-    # cur.execute("INSERT INTO users (uid, name) VALUES (?, ?);", (,))
+    db = get_db()
+    cur = db.cursor()
+    parameters = ('/C=US/CN={0}/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2'.format(name), name)
+    cur.execute("INSERT INTO users (uid, name) VALUES (?, ?);", parameters)
+    db.commit()
 
     return response
 
