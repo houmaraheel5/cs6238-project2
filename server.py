@@ -268,7 +268,7 @@ def delegate(document_id):
             db.commit()
             return "Successfully delegated read access to {0} for {1}".format(document_id, client)
         else:
-            return "{0} is not able to delegate read access to {1}".format(client, document_id)
+            return "{0} is not able to delegate read access to {1}".format(uid, document_id)
     elif permission.upper() == "WRITE":
         if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_propagate_write(uid, document_id)):
             db = get_db()
@@ -278,7 +278,7 @@ def delegate(document_id):
             db.commit()
             return "Successfully delegated write access to {0} for {1}".format(document_id, client)
         else:
-            return "{0} is not able to delegate write access to {1}".format(client, document_id)
+            return "{0} is not able to delegate write access to {1}".format(uid, document_id)
     elif permission.upper() == "OWNER":
         if (is_owner(uid, document_id) or can_propagate_ownership(uid, document_id)):
             db = get_db()
@@ -288,7 +288,7 @@ def delegate(document_id):
             db.commit()
             return "Successfully delegated ownership to {0} for {1}".format(document_id, client)
         else:
-            return "{0} is not able to delegate ownership on {1}".format(client, document_id)
+            return "{0} is not able to delegate ownership on {1}".format(uid, document_id)
     return "Unsuccessful"
 
 @application.route('/safe_delete/<document_id>', methods=['GET'])

@@ -14,7 +14,7 @@ CREATE TABLE document_access (
       until TEXT,
       permission TEXT NOT NULL,
       propagate integer(1) DEFAULT(0),
-      PRIMARY KEY(uid, document_id)
+      PRIMARY KEY(uid, document_id, permission, until)
 );
 
 CREATE TABLE document_owner (
@@ -22,7 +22,7 @@ CREATE TABLE document_owner (
       document_id text(128) NOT NULL,
       until TEXT,
       propagate integer(1) DEFAULT(0),
-      PRIMARY KEY(uid, document_id)
+      PRIMARY KEY(uid, document_id, until)
 );
 
 CREATE TABLE users (
