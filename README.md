@@ -99,6 +99,13 @@ source proj2/bin/activate
 pip install -r requirements.txt
 ```
 
+Initialize the database
+```
+cd server
+python
+>>> import server
+>>> server.init_db()
+```
 ### Create server certificates
 ```
 cd server
