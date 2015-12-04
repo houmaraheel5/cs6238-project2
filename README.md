@@ -1,12 +1,7 @@
 # cs6238-project2
-
-sudo apt-get install libffi-dev
-sudo apt-get install libssh-dev
-sudo ln -s /usr/include/x86_64-linux-gnu/openssl/opensslconf.h
-/usr/include/openssl/
-
 ## Client Installation
 ```
+sudo apt-get install python-m2crypto
 pip install virtualenv
 git clone https://github.com/kylekoza/cs6238-project2.git kozalummis
 cd kozalummis
@@ -86,4 +81,52 @@ optional arguments:
 ```
 
 ## Server Installation
+### Prerequisites
+```
+sudo apt-get install libffi-dev libssl-dev nginx swig python-pip python-dev build-essential
+sudo ln -s /usr/include/x86_64-linux-gnu/openssl/opensslconf.h /usr/include/openssl/
+sudo useradd flask
+```
 
+As the new `flask` user, create a Python virtual environment in your home
+folder and download the project.
+```
+pip install virtualenv
+git clone https://github.com/kylekoza/cs6238-project2.git
+cd kozalummis
+virtualenv proj2
+source proj2/bin/activate
+pip install -r requirements.txt
+```
+
+### Create server certificates
+```
+cd server
+openssl genrsa -out ca.key 4096
+openssl req -new -x509 -days 365 -key ca.key -out ca.crt
+openssl genrsa -out server.key 2048
+openssl req -new -key server.key -out server.csr
+openssl x509 -req -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+```
+
+### Copy CA certificates to sub-ca for Python-tlsauth
+```
+cp ca.crt sub-ca/public/root.pem
+cp ca.key sub-ca/private/root.pem
+```
+
+### Copy the nginx configuration to /etc/nginx/sites-available
+`sudo cp server/nginx.conf /etc/nginx/sites-available/cs6238-project2`
+
+### Enable the site
+`sudo ln -s /etc/nginx/sites-available/cs6238-project2
+/etc/nginx/sites-enabled/cs6238-project2`
+
+### Copy cs6238.conf to /etc/init/
+`sudo cp server/cs6238.conf /etc/init/`
+
+## Start the server
+```
+sudo service cs6238 start
+sudo service nginx start
+```
