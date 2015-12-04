@@ -11,6 +11,7 @@ import shelve
 from flask import Flask, g, request, redirect, url_for, session, escape, make_response
 from werkzeug import secure_filename
 from cryptography.fernet import Fernet
+from functools import wraps
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 DB_PATH = os.path.join(BASE_PATH, "db.db")
@@ -60,6 +61,15 @@ def get_doc_uid(username, docname):
 
 def unauthorized_handler():
     return 'Unauthorized'
+
+def login_required(func):
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        if request.environ['dn'] == '':
+            return unauthorized_handler()
+        else:
+            return func(*args, **kwargs)
+    return decorated
 
 @application.teardown_appcontext
 def close_connection(exception):
@@ -169,6 +179,7 @@ def index():
     return 'You are not logged in'
 
 @application.route('/check_out/<document_id>', methods=['GET'])
+@login_required
 def check_out(document_id):
     # TODO: what happens if file does not exist?
     uid = request.environ['dn']
@@ -196,6 +207,7 @@ def check_out(document_id):
 @application.route('/check_in/<document_id>/<flag>', methods=['POST'])
 @application.route('/check_in/<document_id>/', defaults={'flag': None}, methods=['POST'])
 @application.route('/check_in/', defaults={'flag': None, 'document_id': None}, methods=['POST'])
+@login_required
 def check_in(document_id, flag):
     if request.method == 'POST':
         file = request.files['file']
@@ -242,6 +254,7 @@ def check_in(document_id, flag):
 
 
 @application.route('/delegate/<document_id>/', methods=['POST'])
+@login_required
 def delegate(document_id):
     # TODO: read in until from text as datetime.datetime
     data = request.get_json()
@@ -295,6 +308,7 @@ def delegate(document_id):
     return "Unsuccessful"
 
 @application.route('/safe_delete/<document_id>', methods=['GET'])
+@login_required
 def delete(document_id):
     uid = request.environ['dn']
     if (is_owner(uid, document_id) or is_effective_owner(uid, document_id)):
@@ -314,6 +328,7 @@ def delete(document_id):
 
 
 @application.route('/get_entitlements/', methods=['GET'])
+@login_required
 def get_entitlements():
     uid = request.environ['dn']
     db = get_db()
@@ -335,6 +350,7 @@ def get_entitlements():
     return json.dumps({"status": "success", "entitlements": result})
 
 @application.route('/get_users/', methods=['GET'])
+@login_required
 def get_users():
     db = get_db()
     result = []
@@ -345,6 +361,7 @@ def get_users():
     return json.dumps({"status": "success", "users": result})
 
 @application.route('/debug/')
+@login_required
 def debug():
     return str(request.environ)
 
