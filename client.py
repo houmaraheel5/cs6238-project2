@@ -1,43 +1,42 @@
-import click
+#!/usr/bin/env python
+import argparse
 
-@click.command()
-@click.option('--hostname', prompt='Enter remote host name', default='localhost ', help='Remote host name')
-def init_session(hostname):
-    click.echo('You are now connected to %s' % hostname)
-    
-@click.command()
-@click.option('--Document_UID', prompt='Enter the name of the docuent you wish to check out', default='filename')
-def check_out(Document_UID):
-    click.echo('You have checked out document %s' % Document_UID)
-    
-@click.command()
-@click.option('--Document_UID', prompt='Enter the name of the document you wish to check in')
-@click.option('--Security_Flag', prompt='Would you like to enable document (C)onfidentiality or (I)ntegrity', default='None')
-def check_in(Document_UID, Security_Flag):
-    click.echo('You have check in document %s' % Document_UID)
-    click.echo('Document checked in with %s flag set' % Security_Flag)
-    
-@click.command()
-@click.option('--Document_UID', prompt='Enter the name of the document you wish to delgate access to')
-@click.option('--client', prompt='Which user would you like to share this document with')
-@click.option('--time', prompt='When would you like this delegation to expire(in number of days)', default='Never')
-@click.option('--permission', prompt='Would you like this user to be able to (R)ead this document or (W)rite and read', default='R')
-@click.option('--PropogationFlag', prompt='Would you like this user to be able to allow others to access this document', default='No')
-def delegate(Document_UID, client, time, permission, PropogationFlag):
-    click.echo('You have succesfully granted %s the ability to %s to %s for %s days' % client, permission, Document_UID, time)
-    
-@click.command()
-@click.option('--Document_UID', prompt='Enter the name of the document you wish to securely delete')
-def safe_delete(Document_UID):
-    click.echo('You have safely deleted %s' % Document_UID)
-    
-@click.command()
-def terminate_session():
-    click.echo('You have disconnected from the host')
-    
-if __name__ == '__main__':
-    #check_out()
-    #check_in()
-    #init_session()
-    terminate_session()
-    
+def get_parser():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title='subcommands')
+
+    checkout = subparsers.add_parser('checkout', help="Check out a document.")
+    checkout.add_argument('document_id', help="The id of the document to check out.")
+    checkout.set_defaults(func=checkout)
+
+    list_parse = subparsers.add_parser('list', help="List users and document ids.")
+    list_parse.add_argument('object', choices=['documents', 'users'], help="documents or users")
+    list_parse.set_defaults(func=list_parse)
+
+    checkin = subparsers.add_parser('checkin', help="Check in a document.")
+    checkin.add_argument('document', help="Path to the document.")
+    checkin.add_argument('--flag', choices=['confidentiality', 'integrity'])
+    checkin.set_defaults(func=checkin)
+
+    delete = subparsers.add_parser('delete', help="Delete a document")
+    delete.add_argument('document_id', help="The id of the document to delete.")
+    delete.set_defaults(func=delete)
+
+    delegate = subparsers.add_parser('delegate', help="Delegate permissions to the document")
+    delegate.add_argument('document_id', help="The id of the document to delegate")
+    delegate.add_argument('client_id', help="The id of the client to delegate to")
+    delegate.add_argument('permission', choices=['read', 'write', 'ownership'])
+    delegate.add_argument('--time', type=int, help="Number of days to grant access")
+    delegate.add_argument('--propagate', action="store_true", default=False, help="Can the user propagate the granted permission.")
+    delegate.set_defaults(func=delegate)
+
+    return parser
+
+def main():
+    parser = get_parser()
+    parser.parse_args()
+    args = vars(args)
+    args.func(args)
+
+if __name__ == "__main__":
+    main()
