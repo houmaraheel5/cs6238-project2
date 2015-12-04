@@ -65,7 +65,7 @@ def unauthorized_handler():
 def login_required(func):
     @wraps(func)
     def decorated(*args, **kwargs):
-        if dn in request.environ:
+        if 'dn' in request.environ:
             return func(*args, **kwargs)
         else:
             return unauthorized_handler()
