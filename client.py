@@ -45,7 +45,10 @@ def delete(args):
     r = requests.get(BASE_URL + "safe_delete/" + args['document_id'], cert=cert, verify=False)
 
 def delegate(args):
-    pass
+    args = vars(args)
+    
+    payload = {"client": args['client_id'], "permission": args['permission'], "propagate": args['propagate'], "until": str(datetime.datetime.utcnow() + datetime.timedelta(days=args['time']))} 
+    r = requests.post(BASE_URL + "delegate/" + document_id + "/", cert=cert, verify=False, json=payload)
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -72,7 +75,7 @@ def get_parser():
     arg_delegate.add_argument('document_id', help="The id of the document to delegate")
     arg_delegate.add_argument('client_id', help="The id of the client to delegate to")
     arg_delegate.add_argument('permission', choices=['read', 'write', 'ownership'])
-    arg_delegate.add_argument('--time', type=int, help="Number of days to grant access")
+    arg_delegate.add_argument('--time', type=int, help="Number of days to grant access", default=30)
     arg_delegate.add_argument('--propagate', action="store_true", default=False, help="Can the user propagate the granted permission.")
     arg_delegate.set_defaults(func=delegate)
 
