@@ -32,5 +32,3 @@ archive.extractall()
 
 os.symlink(args['client'] + ".crt", "client.crt")
 os.symlink(args['client'] + ".key", "client.key")
-
-#TODO: copy in client program
