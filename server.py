@@ -303,10 +303,10 @@ def register(name):
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 1024)
     req = OpenSSL.crypto.X509Req()
     req.set_pubkey(pkey)
-    name = {"C": "US", "ST": "Georgia", "L": "Atlanta", "O": "CS6238", "OU": "Project2", "CN": name}
+    fullname = {"C": "US", "ST": "Georgia", "L": "Atlanta", "O": "CS6238", "OU": "Project2", "CN": name}
 
     subj = req.get_subject()
-    for (key, value) in name.items():
+    for (key, value) in fullname.items():
         setattr(subj, key, value)
 
     req.sign(pkey, "md5")
