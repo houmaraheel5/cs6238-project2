@@ -5,6 +5,8 @@ import os
 import json
 import tempfile
 import hashlib
+import datetime
+import urllib
 from werkzeug import secure_filename
 
 BASEDIR  = os.path.dirname(os.path.realpath(__file__))
@@ -63,47 +65,51 @@ class testCheckout(unittest.TestCase):
         self.assertEqual(r.text, "Access denied")
 
 class Entitlements(unittest.TestCase):
-    def GetEntitlements(self):
+    def testGetEntitlements(self):
         r = requests.get(BASE_URL + "get_entitlements/", cert=cert, verify=False)
 
         result = json.loads(r.text)
 
         self.assertEqual(result["status"], "success")
 
-class Delegation(unittest.TestCase):
-    def DelegateReadNoProagateNoTime(self):
+class yDelegation(unittest.TestCase):
+    def testDelegateReadNoProagateNoTime(self):
         document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
-        client_id = "" # TODO
+        client_id = "C=US/CN=jimmy/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2" # TODO
 
-        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/READ/False/", cert=cert, verify=False)
+        payload = {"client": client_id, "permission": "READ", "propagate": False} 
+        r = requests.post(BASE_URL + "delegate/" + document_id + "/", cert=cert, verify=False, json=payload)
 
         self.assertEqual(r.text, "Successfully delegated read access to {0} for {1}".format(document_id, client_id))
 
-    def DelegateReadProagateTime(self):
+    def testDelegateReadProagateTime(self):
         document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
-        client_id = "" # TODO
+        client_id = "C=US/CN=jimmy/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2" # TODO
 
-        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/READ/True/" + str(datetime.datetime.utcnow() + datetime.timedelta(days=5)) + "/", cert=cert, verify=False)
+        payload = {"client": client_id, "permission": "READ", "propagate": True, "until": str(datetime.datetime.utcnow() + datetime.timedelta(days=5))} 
+        r = requests.post(BASE_URL + "delegate/" + document_id + "/", cert=cert, verify=False, json=payload)
 
         self.assertEqual(r.text, "Successfully delegated read access to {0} for {1}".format(document_id, client_id))
 
-    def DelegateWriteNoProagateNoTime(self):
+    def testDelegateWriteNoProagateNoTime(self):
         document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
-        client_id = "" # TODO
+        client_id = "C=US/CN=jimmy/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2" # TODO
 
-        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/WRITE/False/", cert=cert, verify=False)
+        payload = {"client": client_id, "permission": "WRITE", "propagate": False} 
+        r = requests.post(BASE_URL + "delegate/" + document_id + "/", cert=cert, verify=False, json=payload)
 
         self.assertEqual(r.text, "Successfully delegated write access to {0} for {1}".format(document_id, client_id))
 
-    def DelegateWriteProagateTime(self):
+    def testDelegateWriteProagateTime(self):
         document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
-        client_id = "" # TODO
+        client_id = "C=US/CN=jimmy/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2" # TODO
 
-        r = requests.get(BASE_URL + "delegate/" + document_id + "/" + client_id + "/WRITE/True/" + str(datetime.datetime.utcnow() + datetime.timedelta(days=5)) + "/", cert=cert, verify=False)
+        payload = {"client": client_id, "permission": "WRITE", "propagate": True, "until": str(datetime.datetime.utcnow() + datetime.timedelta(days=5))} 
+        r = requests.post(BASE_URL + "delegate/" + document_id + "/", cert=cert, verify=False, json=payload)
 
         self.assertEqual(r.text, "Successfully delegated write access to {0} for {1}".format(document_id, client_id))
 
-class testDelete(unittest.TestCase):
+class ztestDelete(unittest.TestCase):
     def testDelete(self):
         document_id = hashlib.sha1(secure_filename("CUS_STGeorgia_LAtlanta_Otesting_OUKyle_CNKyle" + os.path.basename(upload.name))).hexdigest()
 
@@ -112,4 +118,4 @@ class testDelete(unittest.TestCase):
         self.assertEqual(r.text, "Document deleted")
 
 if __name__ == "__main__":
-    unittest.main()
+   unittest.main()
