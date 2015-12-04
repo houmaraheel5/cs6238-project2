@@ -61,6 +61,13 @@ def get_doc_uid(username, docname):
 def unauthorized_handler():
     return 'Unauthorized'
 
+def login_required(func):
+    def decorated(*args, **kwargs):
+        if dn in request.environ:
+            return func(*args, **kwargs)
+        else:
+            return unauthorized_handler()
+
 @application.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -344,6 +351,7 @@ def get_users():
         result.append({"uid": row["uid"], "name": row["short_name"]})
     return json.dumps({"status": "success", "users": result})
 
+@login_required
 @application.route('/debug/')
 def debug():
     return str(request.environ)
