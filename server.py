@@ -238,11 +238,26 @@ def check_in(document_id, flag):
             return "Must submit a file"
 
 
-@application.route('/delegate/<document_id>/<client>/<permission>/<propagate>/<until>', methods=['GET', 'POST'])
-@application.route('/delegate/<document_id>/<client>/<permission>/<propagate>', methods=['GET', 'POST'],
-           defaults={'until': datetime.datetime.utcnow() + datetime.timedelta(days=30)})
-def delegate(document_id, client, until, permission, propogate):
+@application.route('/delegate/<document_id>/', methods=['POST'])
+def delegate(document_id):
     # TODO: read in until from text as datetime.datetime
+    data = request.get_json()
+    if 'client' in data:
+        client = data['client']
+    else:
+        return "Must specify destination client"
+    if 'permission' in data:
+        permission = data['permission']
+    else:
+        return "Must specify permission type"
+    if 'propagate' in data:
+        propagate = data['propagate']
+    else:
+        propagate = False
+    if 'until' in data:
+        until = data['until']
+    else:
+        until = str(datetime.datetime.utcnow() + datetime.timedelta(days=30))
     uid = request.environ['dn']
     if permission.upper() == "READ":
         if (is_owner(uid, document_id) or is_effective_owner(uid, document_id) or can_propagate_read(uid, document_id)):
