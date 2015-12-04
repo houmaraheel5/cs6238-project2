@@ -345,7 +345,7 @@ def register(name):
     db = get_db()
     cur = db.cursor()
     parameters = ('/C=US/CN={0}/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2'.format(name), name)
-    cur.execute("INSERT INTO users (uid, name) VALUES (?, ?);", parameters)
+    cur.execute("INSERT INTO users (uid, short_name) VALUES (?, ?);", parameters)
     db.commit()
 
     return response
