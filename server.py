@@ -422,8 +422,11 @@ def register(name):
     db = get_db()
     cur = db.cursor()
     parameters = ('/C=US/CN={0}/L=Atlanta/O=CS6238/ST=Georgia/OU=Project2'.format(name), name)
-    cur.execute("INSERT INTO users (uid, short_name) VALUES (?, ?);", parameters)
-    db.commit()
+    try:
+        cur.execute("INSERT INTO users (uid, short_name) VALUES (?, ?);", parameters)
+        db.commit()
+    except:
+        return "Error: users already exists"
 
     return response
 
