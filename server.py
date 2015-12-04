@@ -332,7 +332,7 @@ def register(name):
 
     zip_file = StringIO.StringIO()
     archive = zipfile.ZipFile(zip_file, "w")
-    archive.writestr("{0}.pem".format(name), outcert)
+    archive.writestr("{0}.crt".format(name), outcert)
     archive.writestr("{0}.key".format(name), outkey)
     archive.close()
 
